@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact · Skye Data</title>
+<meta name="description" content="Prefer not to hop on a call? Send Skye Data a message and we will get back to you." />
+<meta name="robots" content="index,follow" />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="256x256" href="skye-data-icon-256.png" />
+<link rel="apple-touch-icon" href="skye-data-icon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="grid-bg">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html" aria-label="Skye Data home">
+        <img class="brand-mark" src="skye-data-icon-256.png" alt="Skye Data" width="30" height="30" />
+        Skye&nbsp;Data
+      </a>
+      <nav class="nav-links">
+        <a class="link" href="index.html#how">How it works</a>
+        <a class="link" href="book.html">Book a meeting</a>
+        <a class="btn btn-primary" href="book.html">Book a meeting</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-glow"></div>
+    <div class="wrap">
+      <div class="page-head reveal">
+        <div class="kicker">Contact</div>
+        <h1>Prefer not to call?</h1>
+        <p>Send us a message and we will get back to you. Tell us your aircraft types and how many tails you fly and we can include indicative pricing.</p>
+      </div>
+
+      <form id="contactForm" class="form-card reveal" style="animation-delay:.08s" novalidate>
+        <!-- honeypot: hidden from people, filled by bots -->
+        <input type="text" name="company_website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <div class="row2">
+          <div class="field">
+            <label for="name">Full name <span class="req">*</span></label>
+            <input type="text" id="name" name="name" maxlength="200" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="email">Work email <span class="req">*</span></label>
+            <input type="email" id="email" name="email" maxlength="320" required autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="company">Airline / operator <span class="req">*</span></label>
+            <input type="text" id="company" name="company" maxlength="200" required autocomplete="organization" />
+          </div>
+          <div class="field">
+            <label for="tails">Number of tails</label>
+            <input type="number" id="tails" name="tails" min="1" max="100000" inputmode="numeric" placeholder="e.g. 8" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="aircraft">Aircraft types</label>
+          <input type="text" id="aircraft" name="aircraft" maxlength="300" placeholder="e.g. B737-800, DHC-8" />
+        </div>
+
+        <div class="field">
+          <label for="message">How can we help? <span class="req">*</span></label>
+          <textarea id="message" name="message" maxlength="4000" required placeholder="Recorders, ICDs, what you are trying to do..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary submit" id="submitBtn">Send message</button>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+
+        <p class="form-aside">Rather talk it through? <a href="book.html">Book a meeting</a> instead.</p>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-col">
+      <img class="footer-lockup" src="skye-data-lockup-trim.png" alt="Skye Data, flight data decoding" />
+      <div class="foot-meta">
+        <span class="small">&copy; 2026 Skye Data (Pty) Ltd. South Africa.</span>
+        <a class="link" href="mailto:admin@skye-data.net">admin@skye-data.net</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Point this at the n8n production webhook URL once the workflow is active.
+    const N8N_WEBHOOK_URL = "https://n8n-uq4a.onrender.com/webhook/skye-contact";
+
+    const form = document.getElementById("contactForm");
+    const statusEl = document.getElementById("status");
+    const btn = document.getElementById("submitBtn");
+
+    function show(kind, msg) {
+      statusEl.className = "status show " + kind;
+      statusEl.textContent = msg;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      statusEl.className = "status";
+
+      // honeypot: pretend success for bots
+      if (form.company_website.value) { show("ok", "Thanks, we will be in touch."); form.reset(); return; }
+
+      const data = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        company: form.company.value.trim(),
+        tails: form.tails.value.trim(),
+        aircraft: form.aircraft.value.trim(),
+        message: form.message.value.trim(),
+        source: "skye-data.net contact form",
+        submitted_at: new Date().toISOString(),
+      };
+
+      if (data.name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email) || data.company.length < 1 || data.message.length < 10) {
+        show("err", "Please add your name, a valid email, your operator, and a short message (10+ characters).");
+        return;
+      }
+
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = "Sending...";
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 20000);
+        const res = await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        if (!res.ok) throw new Error("bad status");
+        show("ok", "Thanks. Your message is in. We will reply to " + data.email + " shortly.");
+        form.reset();
+      } catch (err) {
+        show("err", "Something went wrong sending that. Email admin@skye-data.net and we will pick it up.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  </script>
+
+</body>
+</html>
