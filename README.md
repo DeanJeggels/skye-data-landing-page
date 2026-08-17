@@ -3,7 +3,12 @@
 Static single-page site for **skye-data.net**. Brand colours and fonts are taken directly from the app's `globals.css` (cyan `#22d3ee` accent on `#0a0e14`, Inter + JetBrains Mono).
 
 ## Files
-- `index.html` — the page, self-contained (Google Fonts via CDN, no build step)
+- `index.html` — the landing page, self-contained (Google Fonts via CDN, no build step)
+- `book.html` — Cal.com booking embed
+- `contact.html` — contact form → n8n webhook `skye-contact` → Supabase CRM `fdr_leads` + Gmail notify/auto-reply
+- `calculator.html` — readout-burden cost calculator (vanilla JS, no build). Form posts to n8n webhook
+  `skye-calculator` → inserts into `fdr_calculator_submissions` (Supabase "Skye Data Licensing" project,
+  anon key + insert-only RLS) → Gmail notify to admin@ + auto-reply. Workflow: "Skye Data Calculator Leads" on n8n.
 - `favicon.ico`
 
 ## Deploy via Netlify (recommended — already in your stack)
@@ -24,5 +29,8 @@ Static single-page site for **skye-data.net**. Brand colours and fonts are taken
 Set the Xero app's **Company or application URL** to `https://skye-data.net` once live.
 
 ## Editing notes
-- Pricing in the "barrier" section is intentionally soft ("a fraction of that"). Put exact figures back in by editing the `.bar-fill.skye` width and the `.price` label if you want hard numbers.
-- All colours are CSS variables in the `:root` block at the top of `index.html`.
+- Copy is value-led by design: no Skye pricing and no "cheaper than" claims anywhere on the site.
+  The calculator shows only the visitor's own costs — keep it that way.
+- Calculator seed figures (R8,000/outsourced readout, 0.6 h daily readout, 70 kg fuel waste) are
+  editable defaults, not research-backed constants — Muller owns whether they change.
+- All colours are CSS variables: `:root` in `styles.css` (site) and `.sheet` in `calculator.html` (worksheet).
