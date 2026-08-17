@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Skye Data · Decode your flight data on your own machines</title>
-<meta name="description" content="A licensed desktop application for flight data monitoring, built for operators priced out of enterprise FDM. Local decode, bring your own ICDs, custom integrations, priced per tail." />
+<meta name="description" content="A licensed desktop app for flight data monitoring. Decode locally on your own machines, bring your own ICDs, add custom integrations, license per tail." />
 <link rel="icon" href="favicon.ico" sizes="any" />
 <link rel="icon" type="image/png" sizes="256x256" href="skye-data-icon-256.png" />
 <link rel="apple-touch-icon" href="skye-data-icon-512.png" />
@@ -147,18 +147,6 @@
   .section-head p { color: var(--fg-muted); font-size: 1.05rem; }
 
   /* PROBLEM split */
-  .problem { background: var(--bg-elev); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .problem .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-  .problem h2 .muted { color: var(--fg-dim); }
-  .problem p { color: var(--fg-muted); margin-bottom: 16px; }
-  .bars { display: flex; flex-direction: column; gap: 18px; }
-  .bar-row .bar-label { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 8px; color: var(--fg-muted); }
-  .bar-row .bar-label .price { font-family: var(--mono); color: var(--fg); }
-  .bar-track { height: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 999px; }
-  .bar-fill.enterprise { width: 100%; background: repeating-linear-gradient(45deg, var(--border-strong), var(--border-strong) 6px, var(--surface) 6px, var(--surface) 12px); }
-  .bar-fill.skye { width: 22%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 18px -2px rgba(34,211,238,0.6); }
-  .saving { margin-top: 22px; font-family: var(--mono); font-size: 0.85rem; color: var(--success); }
 
   /* PILLARS */
   .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -209,7 +197,6 @@
     .stats-inner.feat3 { grid-template-columns: 1fr; }
     .stat:nth-child(2) { border-right: none; }
     .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--border); }
-    .problem .wrap { grid-template-columns: 1fr; gap: 36px; }
     .pillars { grid-template-columns: 1fr; }
     .steps { grid-template-columns: 1fr 1fr; }
     .step::after { display: none; }
@@ -288,8 +275,8 @@
           </div>
           <div class="card reveal" style="animation-delay:.05s">
             <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 11l8-8 9 9-8 8-9-9z" stroke="#22d3ee" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.3" cy="8.3" r="1.5" fill="#7dd3fc"/></svg></div>
-            <h3>Priced to compete</h3>
-            <p>Licensed per tail and quoted to your fleet. A fraction of enterprise FDM, with no platform lock-in.</p>
+            <h3>Licensed per tail, no lock-in</h3>
+            <p>Licensing scales with the fleet you actually fly, quoted to your operation. No multi-year platform contract and nothing to migrate off if you leave.</p>
           </div>
           <div class="card reveal" style="animation-delay:.1s">
             <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4-3 7.2-7 8-4-.8-7-4-7-8V6z" stroke="#22d3ee" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 12l1.8 1.8L15 10" stroke="#7dd3fc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
