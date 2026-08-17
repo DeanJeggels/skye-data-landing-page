@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>What does your flight data cost? · Skye Data</title>
+<meta name="description" content="Work out what flight data readouts and unseen fuel burn cost your operation each year. Your fleet, your figures — no vendor pricing, nothing leaves your browser until you choose to send it." />
+<meta name="robots" content="index,follow" />
+<meta property="og:title" content="What does your flight data actually cost?" />
+<meta property="og:description" content="A readout-burden calculator for operators. Your fleet, your figures." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="skye-data-og.png" />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="256x256" href="skye-data-icon-256.png" />
+<link rel="apple-touch-icon" href="skye-data-icon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* ---- Worksheet: a light "engineering document" on the dark site ---- */
+  .sheet {
+    --w-ink:#12202E; --w-mid:#42566A; --w-soft:#54667A;
+    --w-rule:#C9D2DA; --w-rule-lt:#E2E8ED; --w-field:#EDF1F4;
+    --w-surface:#FFFFFF; --w-bg:#E6EBEF;
+    --w-accent:#0E7490; --w-amber:#96590A; --w-green:#16704F; --w-red:#A6231C; --w-violet:#5B3E8C;
+    --c1:#1B4B8F; --c2:#5B3E8C; --c3:#B8730A; --c4:#16704F; --c5:#8C3E56; --c6:#3E7A8C;
+    position: relative; z-index: 1;
+    background: var(--w-bg); color: var(--w-ink);
+    font-size: 14px; line-height: 1.5;
+    border-radius: 16px; border: 1px solid var(--border);
+    box-shadow: 0 24px 60px -30px rgba(0,0,0,0.8);
+    padding: 26px 26px 30px; margin: 0 auto;
+  }
+  .sheet :focus-visible { outline: 2px solid var(--w-accent); outline-offset: 2px; border-radius: 0; }
+  .sheet ::selection { background: rgba(14,116,144,0.22); color: var(--w-ink); }
+
+  .sd-head { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between;
+    border-bottom: 2px solid var(--w-ink); padding-bottom: 14px; margin-bottom: 22px; }
+  .sd-brand { font-weight: 800; font-size: 24px; letter-spacing: -0.02em; margin: 0; line-height: 1.15; }
+  .sd-brand span { color: var(--w-accent); }
+  .sd-sub { font-family: var(--mono); font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--w-soft); margin-top: 5px; }
+  .sd-stamp { font-family: var(--mono); font-size: 11px; text-align: right; color: var(--w-mid); letter-spacing: 0.04em; }
+  .sd-stamp b { color: var(--w-ink); font-weight: 600; }
+
+  .sd-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; align-items: start; }
+  .sd-grid > div { min-width: 0; }
+
+  .sd-panel { background: var(--w-surface); border: 1px solid var(--w-rule); padding: 16px 18px 18px; margin-bottom: 18px; }
+  .sd-panel-hd { display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid var(--w-rule); padding-bottom: 8px; margin-bottom: 14px; }
+  .sd-panel-no { font-family: var(--mono); font-size: 11px; color: var(--w-accent); font-weight: 600; }
+  .sd-panel-t { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; margin: 0; color: var(--w-ink); }
+  .sd-panel-note { font-size: 12.5px; color: var(--w-soft); margin: -6px 0 14px; }
+
+  .sd-f { margin-bottom: 15px; } .sd-f:last-of-type { margin-bottom: 0; }
+  .sd-f-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .sd-f-lab { font-size: 13px; font-weight: 500; }
+  .sd-f-hint { font-size: 11.5px; color: var(--w-soft); display: block; font-weight: 400; margin-top: 1px; max-width: 400px; }
+  .sd-f-in { font-family: var(--mono); font-size: 13px; font-weight: 500; width: 112px; text-align: right; padding: 4px 7px;
+    border: 1px solid var(--w-rule); background: var(--w-field); color: var(--w-ink); border-radius: 0; }
+  .sd-f-in:focus { border-color: var(--w-accent); background: #fff; outline: none; box-shadow: 0 0 0 2px rgba(14,116,144,0.18); }
+  .sd-f-unit { font-family: var(--mono); font-size: 11px; color: var(--w-soft); margin-left: 5px; min-width: 62px; display: inline-block; }
+  .sd-f-row { display: flex; align-items: center; }
+
+  input[type=range].sd-sl { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; margin-top: 2px; cursor: pointer; }
+  input[type=range].sd-sl::-webkit-slider-runnable-track { height: 2px; background: var(--w-rule); }
+  input[type=range].sd-sl::-moz-range-track { height: 2px; background: var(--w-rule); }
+  input[type=range].sd-sl::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -8px; background: var(--w-ink); border: 0; border-radius: 0; }
+  input[type=range].sd-sl::-moz-range-thumb { width: 18px; height: 18px; background: var(--w-ink); border: 0; border-radius: 0; }
+
+  .wrap-wide { max-width: 1280px; }
+  .sd-scroll { overflow-x: auto; position: relative; }
+  .sd-scroll::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 28px;
+    background: linear-gradient(to left, var(--w-surface), transparent); pointer-events: none; opacity: 1; transition: opacity 0.15s; }
+  .sd-scroll.at-end::after { opacity: 0; }
+  .sd-reg { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 580px; }
+  .sd-reg th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--w-soft);
+    font-weight: 500; text-align: right; padding: 0 5px 7px; border-bottom: 1px solid var(--w-rule); white-space: nowrap; }
+  .sd-reg th:first-child { text-align: left; padding-left: 0; }
+  .sd-reg td { padding: 7px 5px; border-bottom: 1px solid var(--w-rule-lt); text-align: right; vertical-align: middle; }
+  .sd-reg td:first-child { text-align: left; padding-left: 0; }
+  .sd-reg tr[data-basis="int"] { background: #FAFBFC; }
+  .sd-reg-swatch { width: 8px; height: 8px; display: inline-block; margin-right: 6px; flex: none; }
+  .sd-reg-note { font-size: 10.5px; color: var(--w-soft); display: block; margin-top: 1px; font-weight: 400; }
+  .sd-reg-in { font-family: var(--mono); font-size: 12px; width: 66px; text-align: right; padding: 3px 5px;
+    border: 1px solid var(--w-rule); background: var(--w-field); color: var(--w-ink); border-radius: 0; }
+  .sd-reg-in.wide { width: 78px; }
+  .sd-reg-in.lab { width: 170px; text-align: left; font-family: var(--sans); }
+  .sd-reg-in:focus { border-color: var(--w-accent); background: #fff; outline: none; box-shadow: 0 0 0 2px rgba(14,116,144,0.25); }
+  .sd-reg-basis { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; padding: 5px 8px; border: 1px solid var(--w-rule);
+    background: var(--w-field); cursor: pointer; color: var(--w-mid); border-radius: 0; }
+  .sd-reg-basis[data-b="inv"] { background: var(--w-accent); color: #fff; border-color: var(--w-accent); }
+  .sd-reg-basis[data-b="int"] { background: #EFEAF6; color: var(--w-violet); border-color: #C9BADF; }
+  .sd-reg-out { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  .sd-reg-del { background: none; border: 0; color: var(--w-soft); cursor: pointer; font-size: 16px; line-height: 1; padding: 6px 8px; }
+  .sd-reg-del:hover { color: var(--w-red); }
+  .sd-reg tfoot td { border-bottom: 0; border-top: 2px solid var(--w-ink); padding-top: 9px; font-family: var(--mono); font-weight: 600; font-size: 13px; }
+  .sd-reg tfoot td:first-child { font-family: var(--sans); font-weight: 700; }
+  .sd-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .sd-add { padding: 5px 11px; font-family: var(--sans); font-size: 12px; background: var(--w-field); border: 1px solid var(--w-rule); color: var(--w-ink); cursor: pointer; border-radius: 0; }
+  .sd-add:hover { background: var(--w-ink); color: #fff; border-color: var(--w-ink); }
+  .sd-empty { color: var(--w-soft); font-size: 12px; text-align: left !important; padding: 14px 0 !important; }
+
+  .sd-derive { background: var(--w-field); border-left: 3px solid var(--w-accent); padding: 9px 11px; margin-top: 12px;
+    font-family: var(--mono); font-size: 12px; color: var(--w-mid); }
+  .sd-derive b { color: var(--w-ink); font-size: 14px; font-weight: 600; }
+
+  .sd-led { width: 100%; border-collapse: collapse; font-family: var(--mono); }
+  .sd-led td { padding: 6px 0; border-bottom: 1px solid var(--w-rule-lt); font-size: 13px; vertical-align: baseline; }
+  .sd-led td:last-child { text-align: right; font-weight: 500; white-space: nowrap; }
+  .sd-led .lab { font-family: var(--sans); color: var(--w-mid); }
+  .sd-led .sub { font-size: 11px; color: var(--w-soft); display: block; }
+  .sd-led tr.tot td { border-bottom: 0; border-top: 2px solid var(--w-ink); padding-top: 9px; font-size: 15px; font-weight: 600; }
+  .sd-led tr.tot td.lab { font-family: var(--sans); font-weight: 700; color: var(--w-ink); }
+  .sheet .amb { color: var(--w-amber); } .sheet .vio { color: var(--w-violet); } .sheet .pos { color: var(--w-green); }
+
+  .sd-headline { font-weight: 800; font-size: 38px; letter-spacing: -0.03em; line-height: 1; margin: 2px 0 4px;
+    font-variant-numeric: tabular-nums; }
+  .sd-headline-sub { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--w-soft); margin-bottom: 16px; }
+
+  .sd-stack { display: flex; height: 38px; border: 1px solid var(--w-ink); margin: 4px 0 10px; }
+  .sd-stack div { transition: flex-grow 0.18s ease; min-width: 0; }
+  .sd-key { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--w-mid); font-family: var(--mono); }
+  .sd-key span { display: flex; align-items: center; }
+  .sd-key i { width: 9px; height: 9px; display: inline-block; margin-right: 5px; flex: none; }
+
+  .sd-ceil { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--w-soft); margin: 0 0 8px; padding-left: 106px; }
+  .sd-bars { margin: 4px 0 2px; }
+  .sd-bar-row { display: grid; grid-template-columns: 96px 1fr 78px; gap: 10px; align-items: center; margin-bottom: 7px; }
+  .sd-bar-lab { font-family: var(--mono); font-size: 11px; color: var(--w-mid); text-align: right; white-space: nowrap; }
+  .sd-bar-track { display: block; height: 22px; background: var(--w-rule-lt); border: 1px solid var(--w-rule); position: relative; overflow: hidden; }
+  .sd-bar-fill { display: block; height: 100%; background: var(--w-green); opacity: 0.75; transition: width 0.18s ease; }
+  .sd-bar-val { font-family: var(--mono); font-size: 12px; font-weight: 600; text-align: right; white-space: nowrap; color: var(--w-green); }
+  .sd-bar-row[data-now="1"] .sd-bar-lab { color: var(--w-ink); font-weight: 600; }
+  .sd-bar-row[data-now="1"] .sd-bar-fill { background: var(--w-ink); opacity: 1; }
+  .sd-bar-row[data-now="1"] .sd-bar-val { color: var(--w-ink); }
+  .sd-bar-row[data-now="1"] .sd-bar-track { border-color: var(--w-ink); }
+
+  .sd-sens { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+  .sd-sens th { text-align: right; font-weight: 500; color: var(--w-soft); font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 0 0 6px; border-bottom: 1px solid var(--w-rule); }
+  .sd-sens th:first-child { text-align: left; }
+  .sd-sens td { padding: 5px 0; text-align: right; border-bottom: 1px solid var(--w-rule-lt); }
+  .sd-sens td:first-child { text-align: left; font-family: var(--sans); color: var(--w-mid); }
+
+  .sd-flag { border-left: 3px solid var(--w-amber); background: #FDF6EA; padding: 10px 12px; margin-top: 12px; font-size: 12.5px; line-height: 1.45; color: var(--w-ink); }
+  .sd-flag.v { border-color: var(--w-violet); background: #F4F0FA; }
+  .sd-flag b { font-family: var(--mono); font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; display: block; margin-bottom: 3px; color: var(--w-amber); }
+  .sd-flag.v b { color: var(--w-violet); }
+  .sd-cite { display: block; margin-top: 6px; font-size: 11px; color: var(--w-soft); }
+  .sd-cite a { color: var(--w-accent); text-decoration: underline; }
+
+  .sd-form label { display: block; font-size: 12px; font-weight: 500; margin: 0 0 4px; }
+  .sd-form .row { margin-bottom: 12px; }
+  .sd-form input[type=text], .sd-form input[type=email], .sd-form textarea {
+    width: 100%; font-family: var(--sans); font-size: 13px; padding: 7px 9px; border: 1px solid var(--w-rule);
+    background: var(--w-field); color: var(--w-ink); border-radius: 0; }
+  .sd-form input:focus, .sd-form textarea:focus { border-color: var(--w-accent); background: #fff; outline: none; box-shadow: 0 0 0 2px rgba(14,116,144,0.25); }
+  .sd-form .req { color: var(--w-accent); }
+  .sd-form textarea { resize: vertical; min-height: 64px; }
+  .sd-consent { display: flex; gap: 8px; align-items: flex-start; font-size: 11.5px; color: var(--w-mid); line-height: 1.45; margin-bottom: 12px; }
+  .sd-consent input { margin-top: 2px; flex: none; accent-color: var(--w-accent); }
+  .sd-submit { padding: 10px 20px; font-family: var(--sans); font-size: 14px; font-weight: 600; background: var(--w-ink); color: #fff;
+    border: 0; cursor: pointer; border-radius: 0; min-height: 44px; }
+  .sd-submit:hover { background: var(--w-accent); }
+  .sd-submit:disabled { background: var(--w-rule); color: var(--w-soft); cursor: not-allowed; }
+  .sd-status { margin-top: 12px; font-size: 12.5px; padding: 10px 12px; display: none; }
+  .sd-status.show { display: block; }
+  .sd-status.ok { background: #EAF3EF; border-left: 3px solid var(--w-green); color: var(--w-ink); }
+  .sd-status.err { background: #FBEBEA; border-left: 3px solid var(--w-red); color: var(--w-ink); }
+
+  .sd-foot { margin-top: 6px; font-size: 11.5px; color: var(--w-soft); line-height: 1.55; border-top: 1px solid var(--w-rule); padding-top: 12px; }
+
+  .calc-cta { text-align: center; margin: 48px auto 0; max-width: 640px; position: relative; z-index: 1; }
+  .calc-cta h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.02em; font-weight: 700; margin-bottom: 10px; }
+  .calc-cta p { color: var(--fg-muted); margin-bottom: 22px; }
+
+  @media (max-width: 980px) {
+    .sd-grid { grid-template-columns: 1fr; }
+    .sheet { padding: 18px 14px 22px; }
+  }
+  @media (max-width: 980px), (pointer: coarse) {
+    .sd-f-in, .sd-reg-in, .sd-form input[type=text], .sd-form input[type=email], .sd-form textarea { font-size: 16px; }
+    .sd-f-in { width: 128px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sd-stack div, .sd-bar-fill { transition: none; }
+  }
+</style>
+</head>
+<body class="grid-bg">
+
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html" aria-label="Skye Data home">
+        <img class="brand-mark" src="skye-data-icon-256.png" alt="Skye Data" width="30" height="30" />
+        Skye&nbsp;Data
+      </a>
+      <nav class="nav-links">
+        <a class="link" href="index.html#how">How it works</a>
+        <a class="link" href="contact.html">Contact</a>
+        <a class="btn btn-primary" href="book.html">Book a meeting</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="page-glow"></div>
+    <div class="wrap">
+      <div class="page-head reveal">
+        <div class="kicker">Cost calculator</div>
+        <h1>What does your flight data actually cost?</h1>
+        <p>Your fleet, your readouts, your figures. No vendor pricing and no savings claims — and nothing you enter leaves your browser unless you choose to send it to us.</p>
+      </div>
+    </div>
+    <div class="wrap wrap-wide">
+      <div class="sheet reveal" style="animation-delay:.08s">
+        <header class="sd-head">
+          <div>
+            <h2 class="sd-brand">Readout burden <span>worksheet</span></h2>
+            <div class="sd-sub">Adjust everything to your operation</div>
+          </div>
+          <div class="sd-stamp" id="stamp"></div>
+        </header>
+
+        <div class="sd-grid">
+          <!-- ================= LEFT: inputs ================= -->
+          <div>
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">01</span><h3 class="sd-panel-t">Your operation</h3></div>
+              <div id="fields-op"></div>
+              <div class="sd-derive">Flights across the fleet each year <b id="out-flightsYr"></b></div>
+            </section>
+
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">02</span><h3 class="sd-panel-t">The readouts you do</h3></div>
+              <p class="sd-panel-note">
+                Every readout your operation does. Mark each one <b>outsourced</b> if someone sends you a bill for it,
+                or <b>in-house</b> if your own people do the work — then give it hours instead of rands.
+                Edit, add or delete any row.
+              </p>
+              <div class="sd-scroll">
+                <table class="sd-reg">
+                  <thead>
+                    <tr>
+                      <th scope="col">Readout type</th>
+                      <th scope="col">Times per aircraft<br />per year</th>
+                      <th scope="col">Who does it</th>
+                      <th scope="col">Rands or hours<br />each time</th>
+                      <th scope="col">Routine<br />%</th>
+                      <th scope="col">Cost a year</th>
+                      <th scope="col"><span class="sr-only" style="position:absolute;left:-9999px">Remove</span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="reg-body"></tbody>
+                  <tfoot>
+                    <tr><td colspan="5">Total</td><td class="sd-reg-out" id="out-regTotal"></td><td></td></tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div class="sd-actions">
+                <button type="button" class="sd-add" id="btn-add">+ Add readout type</button>
+                <button type="button" class="sd-add" id="btn-restore">Restore defaults</button>
+              </div>
+              <p class="sd-panel-note" style="margin:12px 0 0">
+                <b>Routine %</b> is your own judgement: how much of that task is the same every time — pulling the data off,
+                converting it, filling in the same report — versus the work that genuinely needs an engineer to decide something.
+              </p>
+            </section>
+
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">03</span><h3 class="sd-panel-t">Fuel visibility</h3></div>
+              <p class="sd-panel-note">Separate from readouts: what recorded flight data can show you about fuel you are burning without meaning to.</p>
+              <div id="fields-fuel"></div>
+              <div class="sd-derive" id="out-fuelDerive"></div>
+              <div class="sd-flag">
+                <b>Sanity check on your saving</b>
+                <span id="out-easyjet"></span>
+                <span class="sd-cite">Source: David Buckley (easyJet), &ldquo;Case Study: easyJet Improves Descent Performance&rdquo;,
+                <a href="https://www.aircraftit.com/articles/case-study-easyjet-improves-descent-performance/" target="_blank" rel="noopener">Aircraft IT OPS, Q3 2025</a>
+                — savings validated across 370,000 flights.</span>
+              </div>
+            </section>
+          </div>
+
+          <!-- ================= RIGHT: results ================= -->
+          <div>
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">04</span><h3 class="sd-panel-t">Your annual readout burden</h3></div>
+              <div class="sd-headline" id="out-burden"></div>
+              <div class="sd-headline-sub" id="out-burdenSub"></div>
+              <div class="sd-stack" id="out-stack" role="img" aria-label="Cost split by readout type"></div>
+              <div class="sd-key" id="out-key"></div>
+              <table class="sd-led" style="margin-top:16px">
+                <tbody>
+                  <tr>
+                    <td class="lab">Paid to outside providers<span class="sub">Money that leaves the business</span></td>
+                    <td id="out-hard"></td>
+                  </tr>
+                  <tr>
+                    <td class="lab">Done by your own people<span class="sub" id="out-softSub"></span></td>
+                    <td class="vio" id="out-soft"></td>
+                  </tr>
+                  <tr class="tot"><td class="lab">Total burden</td><td id="out-tot"></td></tr>
+                </tbody>
+              </table>
+              <table class="sd-led" style="margin-top:14px">
+                <tbody>
+                  <tr><td class="lab">Per aircraft per year</td><td id="out-perTail"></td></tr>
+                  <tr><td class="lab">Per readout</td><td id="out-perEvent"></td></tr>
+                  <tr><td class="lab">Per flight flown</td><td id="out-perSector"></td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">05</span><h3 class="sd-panel-t">How much of this is routine?</h3></div>
+              <table class="sd-led">
+                <tbody>
+                  <tr>
+                    <td class="lab">The routine, repeatable part<span class="sub">Using the percentages you set above</span></td>
+                    <td class="amb" id="out-routine"></td>
+                  </tr>
+                  <tr><td class="lab">Share of total burden</td><td class="amb" id="out-routineShare"></td></tr>
+                  <tr><td class="lab">Judgement work that stays with your engineers</td><td id="out-judgement"></td></tr>
+                </tbody>
+              </table>
+              <div class="sd-flag v" id="out-softFlag" hidden>
+                <b>Most of your cost is not on an invoice</b>
+                <span id="out-softFlagText"></span>
+              </div>
+            </section>
+
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">06</span><h3 class="sd-panel-t">Fuel you could save</h3></div>
+              <div class="sd-headline" id="out-fuelVal"></div>
+              <div class="sd-headline-sub" id="out-fuelSub"></div>
+              <div class="sd-ceil"><span>none of it</span><span id="out-ceil"></span></div>
+              <div class="sd-bars" id="out-bars"></div>
+              <table class="sd-sens" style="margin-top:14px">
+                <thead><tr><th scope="col">You save</th><th scope="col">Fuel</th><th scope="col">Value per year</th></tr></thead>
+                <tbody id="out-sens"></tbody>
+              </table>
+              <div class="sd-flag">
+                <b>Read this one carefully</b>
+                <span id="out-fuelFlag"></span>
+              </div>
+            </section>
+
+            <section class="sd-panel">
+              <div class="sd-panel-hd"><span class="sd-panel-no">07</span><h3 class="sd-panel-t">Send us your numbers</h3></div>
+              <div id="form-wrap">
+                <p class="sd-panel-note">
+                  We will look over what you have entered and tell you honestly where it looks out of line —
+                  including if it looks like you are already running this efficiently.
+                </p>
+                <form class="sd-form" id="calcForm" novalidate>
+                  <input type="text" name="company_website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                  <div class="row">
+                    <label for="sd-n">Your name <span class="req">*</span></label>
+                    <input id="sd-n" name="name" type="text" maxlength="200" autocomplete="name" aria-required="true" />
+                  </div>
+                  <div class="row">
+                    <label for="sd-c">Airline or operation</label>
+                    <input id="sd-c" name="company" type="text" maxlength="200" autocomplete="organization" />
+                  </div>
+                  <div class="row">
+                    <label for="sd-e">Work email <span class="req">*</span></label>
+                    <input id="sd-e" name="email" type="email" maxlength="320" autocomplete="email" aria-required="true" />
+                  </div>
+                  <div class="row">
+                    <label for="sd-m">Anything we should know</label>
+                    <textarea id="sd-m" name="message" maxlength="4000"></textarea>
+                  </div>
+                  <div class="sd-consent">
+                    <input id="sd-consent" name="consent" type="checkbox" />
+                    <label for="sd-consent" style="font-weight:400;margin:0">
+                      I agree that Skye Data may use the figures and contact details I have entered to prepare and send me
+                      a review of these numbers, and to contact me about it. Submissions are stored securely with our
+                      service providers, are never sold or shared for marketing, and will be deleted on request —
+                      email admin@skye-data.net.
+                    </label>
+                  </div>
+                  <button type="submit" class="sd-submit" id="sd-submit">Send my figures</button>
+                  <div class="sd-status" id="sd-status" role="status" aria-live="polite"></div>
+                </form>
+              </div>
+              <div class="sd-foot">
+                Everything here is an estimate built from figures you entered. Fuel converted at 0.80&nbsp;kg/L.
+                The full-time-staff figure assumes 1,800 productive hours per person per year.
+                Nothing on this page is a quotation or a commitment, and no figures leave your browser until you press send.
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="calc-cta reveal" style="animation-delay:.16s">
+        <h2>Rather see it decoded than counted?</h2>
+        <p>Bring one flight and we will decode it live on a call — your recorder, your frame definition, your data.</p>
+        <a class="btn btn-primary" href="book.html">Book a meeting</a>
+        <a class="btn btn-ghost" href="contact.html" style="margin-left:10px">Send a message</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-col">
+      <img class="footer-lockup" src="skye-data-lockup-trim.png" alt="Skye Data, flight data decoding" />
+      <div class="foot-meta">
+        <span class="small">&copy; 2026 Skye Data (Pty) Ltd. South Africa.</span>
+        <a class="link" href="mailto:admin@skye-data.net">admin@skye-data.net</a>
+      </div>
+    </div>
+  </footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var N8N_WEBHOOK_URL = "https://n8n-uq4a.onrender.com/webhook/skye-calculator";
+  var DENSITY = 0.8;          // Jet A-1 kg per litre
+  var FTE_HOURS = 1800;       // productive hours per person per year (disclosed in footer)
+  var HUES = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)"];
+
+  /* ---------------- formatting ---------------- */
+  function sep(n) { return Math.round(n).toLocaleString("en-ZA"); }
+  function R(n) { return "R" + sep(n); }
+  function Rm(n) {
+    if (Math.abs(n) >= 1e9) return "R" + (n / 1e9).toFixed(2) + "bn";
+    return Math.abs(n) >= 1e6 ? "R" + (n / 1e6).toFixed(2) + "m" : R(n);
+  }
+  function fmtT(kg) { var t = kg / 1000; return t >= 10 ? sep(t) : t.toFixed(1); }
+  function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ---------------- state ---------------- */
+  var FIELD_DEFS = [
+    { key: "tails", panel: "op", label: "Aircraft in your fleet", hint: "", min: 1, max: 500, step: 1, unit: "aircraft" },
+    { key: "flightsDay", panel: "op", label: "Average flights per aircraft per day", hint: "One take-off and landing counts as one flight", min: 0.5, max: 12, step: 0.5, unit: "flights" },
+    { key: "utilDays", panel: "op", label: "Days a year each aircraft flies", hint: "After maintenance, storage and any other downtime", min: 150, max: 365, step: 5, unit: "days" },
+    { key: "labRate", panel: "op", label: "What one engineer-hour costs you", hint: "An hour of your engineer or flight data analyst, including overheads — not just their salary", min: 200, max: 2500, step: 50, unit: "R / hour" },
+    { key: "wasteKg", panel: "fuel", label: "Wasted fuel found per flight", hint: "What the recorded data shows was burned unnecessarily — taxiing, APU, climb, cruise level, descent, extra fuel carried. Before you have changed anything.", min: 0, max: 200, step: 5, unit: "kg" },
+    { key: "capture", panel: "fuel", label: "How much of that you could actually save", hint: "Some of it was never yours to save — ATC, weather, traffic and the captain's call account for part of it. The rest only happens if crews and ops change what they do.", min: 0, max: 100, step: 5, unit: "%" },
+    { key: "fuelPrice", panel: "fuel", label: "Jet A-1 price", hint: "", min: 8, max: 45, step: 0.5, unit: "R / litre" }
+  ];
+  var ROW_BOUNDS = { per: [0, 2000], amt: [0, 10000000], hrs: [0, 1000], rep: [0, 100] };
+
+  function defaultRows() {
+    return [
+      { id: 1, hue: 0, label: "Annual flight data recorder readout", note: "Required every year by ICAO Annex 6; some authorities want it twice", per: 1, daily: false, basis: "inv", amt: 8000, hrs: 0, rep: 90 },
+      { id: 2, hue: 1, label: "CVR intelligibility check", note: "Checking the cockpit voice recorder channels are clear", per: 1, daily: false, basis: "inv", amt: 8000, hrs: 0, rep: 10 },
+      { id: 3, hue: 2, label: "Recorder removal, refit & downtime", note: "Pulling the recorder out and putting it back, plus the time on ground", per: 1, daily: false, basis: "int", amt: 0, hrs: 6, rep: 70 },
+      { id: 4, hue: 3, label: "End-of-day readout & report", note: "Download at end of day, decode it, send the report out. Follows your days-flown figure until you edit it.", per: 340, daily: true, basis: "int", amt: 0, hrs: 0.6, rep: 90 },
+      { id: 5, hue: 4, label: "Post-maintenance / event readout", note: "After work on the recorder, or when a flight throws up an event", per: 2, daily: false, basis: "inv", amt: 8000, hrs: 0, rep: 60 }
+    ];
+  }
+
+  var state = {
+    tails: 12, flightsDay: 4, utilDays: 340, labRate: 750,
+    wasteKg: 70, capture: 35, fuelPrice: 20,
+    rows: defaultRows(), nextId: 6, nextHue: 5
+  };
+
+  /* ---------------- maths (pure) ---------------- */
+  function compute(s) {
+    var calc = s.rows.map(function (r) {
+      var per = r.daily ? s.utilDays : r.per;
+      var unit = r.basis === "inv" ? r.amt : r.hrs * s.labRate;
+      var spend = s.tails * per * unit;
+      return {
+        id: r.id, hue: HUES[r.hue % HUES.length], label: r.label, basis: r.basis,
+        per: per, unit: unit, spend: spend, routine: spend * (r.rep / 100)
+      };
+    });
+    var hard = 0, soft = 0, routine = 0, events = 0;
+    calc.forEach(function (r) {
+      if (r.basis === "inv") hard += r.spend; else soft += r.spend;
+      routine += r.routine;
+      events += s.tails * r.per;
+    });
+    var tot = hard + soft;
+    var hours = soft / Math.max(s.labRate, 1);
+    var flightsYr = s.tails * s.flightsDay * s.utilDays;
+    var fuelCeilingKg = flightsYr * s.wasteKg;
+    var fuelKg = fuelCeilingKg * (s.capture / 100);
+    var kgPrice = s.fuelPrice / DENSITY;
+    var fuelValue = fuelKg * kgPrice;
+    var fuelCeiling = fuelCeilingKg * kgPrice;
+    var bandCs = [25, 40, 55, s.capture].filter(function (c, i, a) { return a.indexOf(c) === i; }).sort(function (a, b) { return a - b; });
+    var fuelBand = bandCs.map(function (c) {
+      return { c: c, now: c === s.capture, kg: fuelCeilingKg * (c / 100), v: fuelCeiling * (c / 100) };
+    });
+    return {
+      calc: calc, hard: hard, soft: soft, tot: tot, routine: routine, hours: hours, events: events,
+      flightsYr: flightsYr, fuelKg: fuelKg, fuelValue: fuelValue, fuelBand: fuelBand,
+      fuelCeiling: fuelCeiling, fuelCeilingKg: fuelCeilingKg,
+      perTail: tot / Math.max(s.tails, 1),
+      perEvent: tot / Math.max(events, 1),
+      perSector: tot / Math.max(flightsYr, 1),
+      fte: hours / FTE_HOURS
+    };
+  }
+
+  /* ---------------- left-panel fields ---------------- */
+  function buildFields() {
+    FIELD_DEFS.forEach(function (f) {
+      var host = document.getElementById(f.panel === "op" ? "fields-op" : "fields-fuel");
+      var div = document.createElement("div");
+      div.className = "sd-f";
+      div.innerHTML =
+        '<div class="sd-f-top"><span class="sd-f-lab"><label for="f-' + f.key + '">' + esc(f.label) + "</label>" +
+        (f.hint ? '<span class="sd-f-hint">' + esc(f.hint) + "</span>" : "") +
+        '</span><span class="sd-f-row">' +
+        '<input class="sd-f-in" id="f-' + f.key + '" type="number" inputmode="decimal" min="' + f.min + '" max="' + f.max + '" step="' + f.step + '" value="' + state[f.key] + '" data-key="' + f.key + '" />' +
+        '<span class="sd-f-unit">' + esc(f.unit) + "</span></span></div>" +
+        '<input class="sd-sl" type="range" tabindex="-1" min="' + f.min + '" max="' + f.max + '" step="' + f.step + '" value="' + state[f.key] + '" data-slider="' + f.key + '" aria-hidden="true" />';
+      host.appendChild(div);
+    });
+
+    document.querySelectorAll(".sd-f-in[data-key]").forEach(function (input) {
+      var def = FIELD_DEFS.filter(function (f) { return f.key === input.dataset.key; })[0];
+      input.addEventListener("input", function () {
+        var v = parseFloat(input.value);
+        if (isNaN(v)) return;                       // mid-typing: keep last valid state
+        if (def.key === "tails" || def.key === "utilDays") v = Math.round(v); // integer quantities
+        state[def.key] = clamp(v, def.min, def.max);
+        var sl = document.querySelector('.sd-sl[data-slider="' + def.key + '"]');
+        if (sl) sl.value = state[def.key];
+        if (def.key === "utilDays") syncDailyRows();
+        render();
+      });
+      input.addEventListener("blur", function () {  // normalise the display to the clamped value
+        input.value = state[def.key];
+      });
+    });
+    document.querySelectorAll(".sd-sl[data-slider]").forEach(function (sl) {
+      var def = FIELD_DEFS.filter(function (f) { return f.key === sl.dataset.slider; })[0];
+      sl.addEventListener("input", function () {
+        state[def.key] = clamp(parseFloat(sl.value), def.min, def.max);
+        var input = document.querySelector('.sd-f-in[data-key="' + def.key + '"]');
+        if (input) input.value = state[def.key];
+        if (def.key === "utilDays") syncDailyRows();
+        render();
+      });
+    });
+  }
+
+  function syncDailyRows() {
+    state.rows.forEach(function (r) {
+      if (r.daily) {
+        r.per = state.utilDays;
+        var input = document.querySelector('.sd-reg-in[data-row="' + r.id + '"][data-field="per"]');
+        if (input) input.value = state.utilDays;
+      }
+    });
+  }
+
+  /* ---------------- register table ---------------- */
+  function buildRegister() {
+    var tbody = document.getElementById("reg-body");
+    if (!state.rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="sd-empty">No readout types. Add one, or restore the defaults.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = state.rows.map(function (r) {
+      var valCell = r.basis === "inv"
+        ? '<input class="sd-reg-in wide" type="number" inputmode="decimal" min="0" step="100" value="' + r.amt + '" data-row="' + r.id + '" data-field="amt" aria-label="Rand per event" />'
+        : '<input class="sd-reg-in wide" type="number" inputmode="decimal" min="0" step="0.1" value="' + r.hrs + '" data-row="' + r.id + '" data-field="hrs" aria-label="Hours per event" />';
+      return '<tr data-basis="' + r.basis + '" data-rowid="' + r.id + '">' +
+        '<td><span style="display:flex;align-items:center">' +
+          '<i class="sd-reg-swatch" style="background:' + HUES[r.hue % HUES.length] + '"></i>' +
+          '<input class="sd-reg-in lab" maxlength="200" value="' + esc(r.label) + '" title="' + esc(r.label) + '" data-row="' + r.id + '" data-field="label" aria-label="Readout type name" />' +
+        "</span>" + (r.note ? '<span class="sd-reg-note">' + esc(r.note) + "</span>" : "") + "</td>" +
+        '<td><input class="sd-reg-in" type="number" inputmode="decimal" min="0" step="1" value="' + (r.daily ? state.utilDays : r.per) + '" data-row="' + r.id + '" data-field="per" aria-label="Times per aircraft per year" /></td>' +
+        '<td><button type="button" class="sd-reg-basis" data-b="' + r.basis + '" data-row="' + r.id + '" data-field="basis">' + (r.basis === "inv" ? "OUTSOURCED" : "IN-HOUSE") + "</button></td>" +
+        "<td>" + valCell + "</td>" +
+        '<td><input class="sd-reg-in" type="number" inputmode="decimal" min="0" max="100" step="5" value="' + r.rep + '" data-row="' + r.id + '" data-field="rep" aria-label="Percent routine" /></td>' +
+        '<td class="sd-reg-out" data-out-row="' + r.id + '"></td>' +
+        '<td><button type="button" class="sd-reg-del" data-row="' + r.id + '" data-field="del" aria-label="Remove ' + esc(r.label) + '">&times;</button></td>' +
+      "</tr>";
+    }).join("");
+  }
+
+  document.getElementById("reg-body").addEventListener("input", function (e) {
+    var t = e.target;
+    if (!t.dataset || !t.dataset.row) return;
+    var row = state.rows.filter(function (r) { return String(r.id) === t.dataset.row; })[0];
+    if (!row) return;
+    var f = t.dataset.field;
+    if (f === "label") {
+      row.label = t.value;
+      t.title = t.value;
+      var del = document.querySelector('.sd-reg-del[data-row="' + row.id + '"]');
+      if (del) del.setAttribute("aria-label", "Remove " + t.value);
+      render(); return;
+    }
+    var v = parseFloat(t.value);
+    if (isNaN(v)) return;
+    if (f === "per") { row.per = clamp(v, ROW_BOUNDS.per[0], ROW_BOUNDS.per[1]); row.daily = false; }
+    if (f === "amt") { row.amt = clamp(v, ROW_BOUNDS.amt[0], ROW_BOUNDS.amt[1]); }
+    if (f === "hrs") { row.hrs = clamp(v, ROW_BOUNDS.hrs[0], ROW_BOUNDS.hrs[1]); }
+    if (f === "rep") { row.rep = clamp(v, ROW_BOUNDS.rep[0], ROW_BOUNDS.rep[1]); }
+    render();
+  });
+  document.getElementById("reg-body").addEventListener("focusout", function (e) {
+    var t = e.target;
+    if (!t.dataset || !t.dataset.row || t.dataset.field === "label") return;
+    var row = state.rows.filter(function (r) { return String(r.id) === t.dataset.row; })[0];
+    if (!row) return;
+    var f = t.dataset.field;
+    if (f === "per") t.value = row.daily ? state.utilDays : row.per;
+    if (f === "amt") t.value = row.amt;
+    if (f === "hrs") t.value = row.hrs;
+    if (f === "rep") t.value = row.rep;
+  });
+  document.getElementById("reg-body").addEventListener("click", function (e) {
+    var t = e.target.closest("[data-field]");
+    if (!t || !t.dataset.row) return;
+    var row = state.rows.filter(function (r) { return String(r.id) === t.dataset.row; })[0];
+    if (!row) return;
+    if (t.dataset.field === "basis") {
+      row.basis = row.basis === "inv" ? "int" : "inv";
+      buildRegister(); render();
+      var btn2 = document.querySelector('.sd-reg-basis[data-row="' + row.id + '"]');
+      if (btn2) btn2.focus();                      // tbody rebuild destroyed the old button
+    }
+    if (t.dataset.field === "del") {
+      state.rows = state.rows.filter(function (r) { return r !== row; });
+      buildRegister(); render();
+      document.getElementById("btn-add").focus();  // keep keyboard users in the panel
+    }
+  });
+  document.getElementById("btn-add").addEventListener("click", function () {
+    state.rows.push({
+      id: state.nextId++, hue: state.nextHue++ % HUES.length,
+      label: "Other readout type", note: "", per: 1, daily: false, basis: "inv", amt: 0, hrs: 0, rep: 50
+    });
+    buildRegister(); render();
+  });
+  document.getElementById("btn-restore").addEventListener("click", function () {
+    state.rows = defaultRows(); state.nextId = 6; state.nextHue = 5;
+    syncDailyRows(); buildRegister(); render();
+  });
+
+  /* ---------------- render outputs ---------------- */
+  function set(id, html) { document.getElementById(id).innerHTML = html; }
+
+  function render() {
+    var m = compute(state);
+    var kgSaved = (state.wasteKg * state.capture) / 100;
+
+    set("stamp", "<b>" + state.tails + "</b> aircraft &nbsp;&middot;&nbsp; <b>" + sep(m.events) + "</b> readouts a year<br />" +
+      "Total burden <b>" + Rm(m.tot) + "</b>/yr &nbsp;&middot;&nbsp; <b>" + R(m.perTail) + "</b> per aircraft");
+
+    set("out-flightsYr", sep(m.flightsYr));
+
+    m.calc.forEach(function (r) {
+      var cell = document.querySelector('[data-out-row="' + r.id + '"]');
+      if (cell) cell.textContent = Rm(r.spend);
+    });
+    set("out-regTotal", Rm(m.tot));
+
+    set("out-burden", Rm(m.tot));
+    set("out-burdenSub", "per year &middot; " + R(m.perTail) + " per aircraft &middot; " + sep(m.events) + " readouts");
+    var stackTotal = Math.max(m.tot, 1);
+    set("out-stack", m.calc.map(function (r) {
+      return '<div style="background:' + r.hue + ";flex-grow:" + (r.spend / stackTotal) * 100 + '"></div>';
+    }).join(""));
+    set("out-key", m.calc.filter(function (r) { return r.spend > 0; }).map(function (r) {
+      var chars = Array.from(r.label);            // avoid splitting surrogate pairs
+      var lbl = chars.length > 26 ? chars.slice(0, 26).join("") + "…" : r.label;
+      return '<span><i style="background:' + r.hue + '"></i>' + esc(lbl) + " " + Rm(r.spend) + "</span>";
+    }).join(""));
+    set("out-hard", Rm(m.hard));
+    set("out-soft", Rm(m.soft));
+    set("out-softSub", sep(m.hours) + " hours a year &mdash; " + m.fte.toFixed(1) + " full-time staff");
+    set("out-tot", Rm(m.tot));
+    set("out-perTail", R(m.perTail));
+    set("out-perEvent", R(m.perEvent));
+    set("out-perSector", R(m.perSector));
+
+    set("out-routine", Rm(m.routine));
+    set("out-routineShare", (m.tot > 0 ? (m.routine / m.tot) * 100 : 0).toFixed(0) + "%");
+    set("out-judgement", Rm(Math.max(m.tot - m.routine, 0)));
+    var flag = document.getElementById("out-softFlag");
+    if (m.soft > m.hard && m.tot > 0) {
+      flag.hidden = false;
+      set("out-softFlagText", "On these numbers, " + ((m.soft / m.tot) * 100).toFixed(0) +
+        "% of your readout burden is your own staff's time &mdash; roughly " + m.fte.toFixed(1) +
+        " full-time people. It never appears in a procurement review because nobody bills you for it, which is exactly why it tends to grow unnoticed. Worth checking the hours-per-event figures against what your team actually logs.");
+    } else { flag.hidden = true; }
+
+    set("out-fuelDerive", "<b>" + kgSaved.toFixed(1) + " kg</b> saved per flight<br /><b>" +
+      fmtT(m.fuelKg) + "</b> tonnes/yr &middot; <b>" + Rm(m.fuelValue) + "</b>/yr<br />at <b>R" +
+      (state.fuelPrice / DENSITY).toFixed(2) + "</b>/kg (0.80 kg/L)");
+    set("out-easyjet", "easyJet's descent-profile optimisation programme realised an average of 25 kg per flight across 228 aircraft, rising to 30 kg where crews used managed descent for at least 60% of the descent. That is fuel actually <i>saved</i>, from the descent alone. Your figure above is " +
+      kgSaved.toFixed(1) + " kg across every phase of flight &mdash; if it sits well below 25 kg, you are probably being too hard on yourself.");
+
+    set("out-fuelVal", Rm(m.fuelValue));
+    set("out-fuelSub", "a year if you save " + state.capture + "% of it &middot; " + fmtT(m.fuelKg) +
+      " tonnes &middot; " + kgSaved.toFixed(1) + " kg per flight");
+    set("out-ceil", "all " + Rm(m.fuelCeiling) + " of it");
+    set("out-bars", m.fuelBand.map(function (b) {
+      return '<div class="sd-bar-row" data-now="' + (b.now ? 1 : 0) + '">' +
+        '<span class="sd-bar-lab">' + b.c + "%" + (b.now ? " ← yours" : "") + "</span>" +
+        '<span class="sd-bar-track" role="img" aria-label="Saving ' + b.c + "% is worth " + Rm(b.v) + ' a year"><span class="sd-bar-fill" style="width:' + b.c + '%"></span></span>' +
+        '<span class="sd-bar-val">' + Rm(b.v) + "</span></div>";
+    }).join(""));
+    set("out-sens", m.fuelBand.map(function (b) {
+      return "<tr><td>" + b.c + "% of what was found" + (b.now ? " — your setting" : "") + "</td><td>" +
+        fmtT(b.kg) + " t</td><td class=\"pos\">" + Rm(b.v) + "</td></tr>";
+    }).join(""));
+    set("out-fuelFlag", "The full bar is every rand of wasted fuel the data found &mdash; " + Rm(m.fuelCeiling) +
+      " a year. Nobody gets all of it, and no software gets any of it on its own. Flight data shows where the fuel is going; your crews and ops team decide whether to change anything. The bars are what a programme could reach, not what it will hand you.");
+  }
+
+  /* ---------------- form ---------------- */
+  var form = document.getElementById("calcForm");
+  var statusEl = document.getElementById("sd-status");
+  var btn = document.getElementById("sd-submit");
+  function show(kind, msg) { statusEl.className = "sd-status show " + kind; statusEl.textContent = msg; }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    statusEl.className = "sd-status";
+
+    if (form.company_website.value) { show("ok", "Thanks, we will be in touch."); form.reset(); return; }
+
+    var name = form.name.value.trim();
+    var company = form.company.value.trim();
+    var email = form.email.value.trim();
+    var message = form.message.value.trim();
+    var consent = form.consent.checked;
+
+    if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !consent) {
+      show("err", "Please add your name, a valid work email, and tick the consent box so we may reply to you.");
+      return;
+    }
+
+    var m = compute(state);
+    var payload = {
+      source: "skye-data.net calculator",
+      submitted_at: new Date().toISOString(),
+      contact: { name: name, company: company, email: email, message: message, consent: consent },
+      fleet: {
+        aircraft: state.tails,
+        flightsPerAircraftPerDay: state.flightsDay,
+        daysFlownPerYear: state.utilDays,
+        engineerHourCost: state.labRate,
+        flightsPerYear: Math.round(m.flightsYr)
+      },
+      readouts: state.rows.map(function (r) {
+        return {
+          type: r.label,
+          perTailPerYear: r.daily ? state.utilDays : r.per,
+          basis: r.basis === "inv" ? "outsourced" : "in-house",
+          randsEachTime: r.basis === "inv" ? r.amt : null,
+          hoursEachTime: r.basis === "int" ? r.hrs : null,
+          routinePct: r.rep
+        };
+      }),
+      fuel: { wasteKgPerFlight: state.wasteKg, actuallySavedPct: state.capture, randPerLitre: state.fuelPrice },
+      results: {
+        outsourcedSpend: Math.round(m.hard),
+        inHouseCost: Math.round(m.soft),
+        inHouseHours: Math.round(m.hours),
+        totalBurden: Math.round(m.tot),
+        routinePortion: Math.round(m.routine),
+        fuelValue: Math.round(m.fuelValue)
+      }
+    };
+
+    var ctrl = new AbortController();             // before disabling: a throw here must not strand the button
+    var t = setTimeout(function () { ctrl.abort(); }, 20000);
+    btn.disabled = true;
+    var original = btn.textContent;
+    btn.textContent = "Sending...";
+    fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal
+    }).then(function (res) {
+      clearTimeout(t);
+      if (!res.ok) throw new Error("bad status");
+      set("form-wrap", '<div class="sd-status show ok" role="status" tabindex="-1">Thanks &mdash; we have your figures. We will come back to ' +
+        esc(email) + ' with a review of where the numbers look high or low against comparable operations.</div>');
+      var ok = document.querySelector("#form-wrap .sd-status");
+      if (ok) ok.focus();                          // the form (and its focused button) just got replaced
+    }).catch(function () {
+      show("err", "Something went wrong sending that. Email admin@skye-data.net and we will pick it up.");
+      btn.disabled = false;
+      btn.textContent = original;
+    });
+  });
+
+  /* ---------------- scroll-hint fade on the register table ---------------- */
+  var scroller = document.querySelector(".sd-scroll");
+  function syncScrollHint() {
+    scroller.classList.toggle("at-end", scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4);
+  }
+  scroller.addEventListener("scroll", syncScrollHint, { passive: true });
+  window.addEventListener("resize", syncScrollHint);
+
+  /* ---------------- init ---------------- */
+  buildFields();
+  buildRegister();
+  render();
+  syncScrollHint();
+})();
+</script>
+
+</body>
+</html>
