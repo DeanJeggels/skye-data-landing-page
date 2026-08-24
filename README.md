@@ -18,7 +18,7 @@ Static single-page site for **skye-data.net**. Brand colours and fonts are taken
 4. Add DNS records where `skye-data.net`'s DNS is managed (your registrar):
    - apex `@` → **A** `75.2.60.5` (or an ALIAS/ANAME to `<your-site>.netlify.app`)
    - `www` → **CNAME** `<your-site>.netlify.app`
-   - **Do NOT remove the Google MX records**, or `admin@skye-data.net` email breaks. Only add the web records alongside them.
+   - **Do NOT remove the Google MX records**, or `jacques.binneman@skye-data.net` email breaks. Only add the web records alongside them.
 5. Netlify auto-provisions HTTPS once DNS resolves.
 
 ## Alternative: GitHub Pages
