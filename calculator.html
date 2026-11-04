@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>What does your flight data cost? · Skye Data</title>
-<meta name="description" content="Work out what flight data readouts and unseen fuel burn cost your operation each year. Your fleet, your figures — no vendor pricing, nothing leaves your browser until you choose to send it." />
+<meta name="description" content="Work out what flight data readouts and unseen fuel burn cost your operation each year. Your fleet, your figures. No vendor pricing, and nothing leaves your browser until you choose to send it." />
 <meta name="robots" content="index,follow" />
 <meta property="og:title" content="What does your flight data actually cost?" />
 <meta property="og:description" content="A readout-burden calculator for operators. Your fleet, your figures." />
@@ -211,7 +211,7 @@
       <div class="page-head reveal">
         <div class="kicker">Cost calculator</div>
         <h1>What does your flight data actually cost?</h1>
-        <p>Your fleet, your readouts, your figures. No vendor pricing and no savings claims — and nothing you enter leaves your browser unless you choose to send it to us.</p>
+        <p>Your fleet, your readouts, your figures. No vendor pricing and no savings claims. Nothing you enter leaves your browser unless you choose to send it to us.</p>
       </div>
     </div>
     <div class="wrap wrap-wide">
@@ -237,7 +237,7 @@
               <div class="sd-panel-hd"><span class="sd-panel-no">02</span><h3 class="sd-panel-t">The readouts you do</h3></div>
               <p class="sd-panel-note">
                 Every readout your operation does. Mark each one <b>outsourced</b> if someone sends you a bill for it,
-                or <b>in-house</b> if your own people do the work — then give it hours instead of rands.
+                or <b>in-house</b> if your own people do the work, then give it hours instead of rands.
                 Edit, add or delete any row.
               </p>
               <div class="sd-scroll">
@@ -264,8 +264,8 @@
                 <button type="button" class="sd-add" id="btn-restore">Restore defaults</button>
               </div>
               <p class="sd-panel-note" style="margin:12px 0 0">
-                <b>Routine %</b> is your own judgement: how much of that task is the same every time — pulling the data off,
-                converting it, filling in the same report — versus the work that genuinely needs an engineer to decide something.
+                <b>Routine %</b> is your own judgement: how much of that task is the same every time (pulling the data off,
+                converting it, filling in the same report), versus the work that genuinely needs an engineer to decide something.
               </p>
             </section>
 
@@ -278,8 +278,8 @@
                 <b>Sanity check on your saving</b>
                 <span id="out-easyjet"></span>
                 <span class="sd-cite">Source: David Buckley (easyJet), &ldquo;Case Study: easyJet Improves Descent Performance&rdquo;,
-                <a href="https://www.aircraftit.com/articles/case-study-easyjet-improves-descent-performance/" target="_blank" rel="noopener">Aircraft IT OPS, Q3 2025</a>
-                — savings validated across 370,000 flights.</span>
+                <a href="https://www.aircraftit.com/articles/case-study-easyjet-improves-descent-performance/" target="_blank" rel="noopener">Aircraft IT OPS, Q3 2025</a>.
+                Savings validated across 370,000 flights.</span>
               </div>
             </section>
           </div>
@@ -352,7 +352,7 @@
               <div class="sd-panel-hd"><span class="sd-panel-no">07</span><h3 class="sd-panel-t">Send us your numbers</h3></div>
               <div id="form-wrap">
                 <p class="sd-panel-note">
-                  We will look over what you have entered and tell you honestly where it looks out of line —
+                  We will look over what you have entered and tell you honestly where it looks out of line,
                   including if it looks like you are already running this efficiently.
                 </p>
                 <form class="sd-form" id="calcForm" novalidate>
@@ -378,7 +378,7 @@
                     <label for="sd-consent" style="font-weight:400;margin:0">
                       I agree that Skye Data may use the figures and contact details I have entered to prepare and send me
                       a review of these numbers, and to contact me about it. Submissions are stored securely with our
-                      service providers, are never sold or shared for marketing, and will be deleted on request —
+                      service providers, are never sold or shared for marketing, and will be deleted on request:
                       email team@skye-data.net.
                     </label>
                   </div>
@@ -399,7 +399,7 @@
     <div class="wrap">
       <div class="calc-cta reveal" style="animation-delay:.16s">
         <h2>Rather see it decoded than counted?</h2>
-        <p>Bring one flight and we will decode it live on a call — your recorder, your frame definition, your data.</p>
+        <p>Bring one flight and we will decode it live on a call: your recorder, your frame definition, your data.</p>
         <a class="btn btn-primary" href="book.html">Book a meeting</a>
         <a class="btn btn-ghost" href="contact.html" style="margin-left:10px">Send a message</a>
       </div>
@@ -445,9 +445,9 @@
     { key: "tails", panel: "op", label: "Aircraft in your fleet", hint: "", min: 1, max: 500, step: 1, unit: "aircraft" },
     { key: "flightsDay", panel: "op", label: "Average flights per aircraft per day", hint: "One take-off and landing counts as one flight", min: 0.5, max: 12, step: 0.5, unit: "flights" },
     { key: "utilDays", panel: "op", label: "Days a year each aircraft flies", hint: "After maintenance, storage and any other downtime", min: 150, max: 365, step: 5, unit: "days" },
-    { key: "labRate", panel: "op", label: "What one engineer-hour costs you", hint: "An hour of your engineer or flight data analyst, including overheads — not just their salary", min: 200, max: 2500, step: 50, unit: "R / hour" },
-    { key: "wasteKg", panel: "fuel", label: "Wasted fuel found per flight", hint: "What the recorded data shows was burned unnecessarily — taxiing, APU, climb, cruise level, descent, extra fuel carried. Before you have changed anything.", min: 0, max: 200, step: 5, unit: "kg" },
-    { key: "capture", panel: "fuel", label: "How much of that you could actually save", hint: "Some of it was never yours to save — ATC, weather, traffic and the captain's call account for part of it. The rest only happens if crews and ops change what they do.", min: 0, max: 100, step: 5, unit: "%" },
+    { key: "labRate", panel: "op", label: "What one engineer-hour costs you", hint: "An hour of your engineer or flight data analyst, including overheads, not just their salary", min: 200, max: 2500, step: 50, unit: "R / hour" },
+    { key: "wasteKg", panel: "fuel", label: "Wasted fuel found per flight", hint: "What the recorded data shows was burned unnecessarily: taxiing, APU, climb, cruise level, descent, extra fuel carried. Before you have changed anything.", min: 0, max: 200, step: 5, unit: "kg" },
+    { key: "capture", panel: "fuel", label: "How much of that you could actually save", hint: "Some of it was never yours to save. ATC, weather, traffic and the captain's call account for part of it. The rest only happens if crews and ops change what they do.", min: 0, max: 100, step: 5, unit: "%" },
     { key: "fuelPrice", panel: "fuel", label: "Jet A-1 price", hint: "", min: 8, max: 45, step: 0.5, unit: "R / litre" }
   ];
   var ROW_BOUNDS = { per: [0, 2000], amt: [0, 10000000], hrs: [0, 1000], rep: [0, 100] };
@@ -714,7 +714,7 @@
         '<span class="sd-bar-val">' + Rm(b.v) + "</span></div>";
     }).join(""));
     set("out-sens", m.fuelBand.map(function (b) {
-      return "<tr><td>" + b.c + "% of what was found" + (b.now ? " — your setting" : "") + "</td><td>" +
+      return "<tr><td>" + b.c + "% of what was found" + (b.now ? " (your setting)" : "") + "</td><td>" +
         fmtT(b.kg) + " t</td><td class=\"pos\">" + Rm(b.v) + "</td></tr>";
     }).join(""));
     set("out-fuelFlag", "The full bar is every rand of wasted fuel the data found &mdash; " + Rm(m.fuelCeiling) +
